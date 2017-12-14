@@ -1,3 +1,19 @@
+#' what is the function does: Joint Function Rejection Sampling
+#'
+#' This function implements conditional variabel rejection sampling for rvs with bounded support x,y and which have have bounded pdf.
+#'
+#'
+#' @param fj the joint pdf that we are sampling from
+#' @param N the number of attempted samples.
+#' @param lbx lower bound of support x of f
+#' @param ubx upper bound of support x of f
+#' @param lby upper bound of support y of f
+#' @param uby upper bound of support y of f
+#'
+#' @return A vector containing samples from pdf
+#'
+#' @examples
+#'
 
 twoDsample <- function(fj, N, lbx, ubx, lby, uby) {
   library(cubature)
@@ -22,6 +38,7 @@ twoDsample <- function(fj, N, lbx, ubx, lby, uby) {
     data.frame(x=twos[c(seq(1,length(twos)-1,2))],y=twos[c(seq(2,length(twos),2))])
   }
 }
+
 
 
 
