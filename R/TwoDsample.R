@@ -1,10 +1,11 @@
-#' what is the function does: Joint Function Rejection Sampling
+#' what is the function does: Conditional variable Rejection Sampling
 #'
 #' This function implements conditional variabel rejection sampling for rvs with bounded support x,y and which have have bounded pdf.
 #'
 
 ImportS: ggplot2
 ImportS: cubature
+ImportS: MASS
 
 #'
 #' @param fj the joint pdf that we are sampling from
@@ -16,36 +17,36 @@ ImportS: cubature
 #'
 #' @return A vector containing samples from pdf
 #'
+#' @export
 #' @examples
 #'
-#' jointPDF <- function(x){
+#' jointPFF <- function(x){
 #' x1 = x[1]
 #' x2 = x[2]
-#' ifelse(0<x1 & x1<1 & 0<x2 & x2<1 & 0<x1+x2 & x1+x2<1, 24*x1*x2, 0)}
+#' ifelse(0<x1 & x1 <1 & 0<x2 & x2<1 & 0<x1+x2 & x1+x2<1, 24*x1*x2, 0)}
 #'
-#' a <- twoDsample(fj = jointPDF, N=10000, lbx=0, ubx=1, lby=0, uby=1)
+#' a <- twoDsample(f = jointPFF, N=100, lbx=0, ubx=1, lby=0, uby=1)
 #'
-#' ggplot(a, aes(x, y)) + geom_density_2d()
+#' ggplot(a, aes(x, y)) +  geom_density_2d()
 
-twoDsample <- function(fj, N, lbx, ubx, lby, uby) {
+twoDsample <- function(f, N, lbx=-5000, ubx=5000, lby=-5000, uby=5000) {
+  library(MASS)
   library(cubature)
-  if (abs(adaptIntegrate(fj, c(lbx, lby), c(ubx, uby), maxEval=10000)$integral - 1) > 0.001) {
-    stop("Error: not a pdf. The area under the function you given should be 1")
+  if (abs(adaptIntegrate(f, c(lbx, lby), c(ubx, uby), maxEval=10000)$integral - 1) > 0.001) {
+    stop("Error: Bound is missing/wrong or the function is not a pdf. The area under the function you given should be 1")
   }
   else{
-    maxf <- max(replicate(100000,fj(c(runif(1,lbx,ubx),runif(1,lby,uby)))))
-    twos = c()
-    for (i in 1:N) {
-      two <- c(runif(1,lbx,ubx),runif(1,lby,uby))
-      if (runif(1, 0, maxf) < fj(two)){
-        twos = c(twos, two)
-      }
+    dmvnorm = function(x,mu,sig){
+      x1 = x[1]
+      x2 = x[2]
+      mu1 = mu[1]
+      mu2 = mu[2]
+      sig1 = sig[1]
+      sig2 = sig[2]
+      exp(-1/2*((x1-mu1)^2/sig1^2 - 2*(x1-mu1)*(x2-mu2)/sig1/sig2 + (x2-mu2)^2/sig2^2))/(2*pi*sig1*sig2)
     }
-    data.frame(x=twos[c(seq(1,length(twos)-1,2))],y=twos[c(seq(2,length(twos),2))])
+
+    return( )
   }
 }
-
-
-
-
 
