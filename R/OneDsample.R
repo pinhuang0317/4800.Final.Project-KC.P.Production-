@@ -27,7 +27,7 @@ ImportS: ggplot2
 #' ggplot(a,aes(x)) + geom_density() + stat_function(fun = f, color = "red")
 
 oneDsample <- function(f, N, lb = -Inf, ub = Inf, discrete = FALSE) {
-  bdtest <- runif(1000000,-50,50)
+  bdtest <- seq(-50,50,0.001)
   if (f(-50) == 0 & f(50) == 0 & mean(f(bdtest)) > 0){
     lb = min(bdtest[which(f(bdtest)>0)])
     ub = max(bdtest[which(f(bdtest)>0)])
