@@ -23,11 +23,11 @@ ImportS: ggplot2
 #' ggplot(a,aes(x)) + geom_density() + stat_function(fun = f, color = "red")
 #'
 #' f <- function(x) {1/pi/(1+x^2)}
-#' a <- oneDsample(f,20000)
+#' a <- oneDsample(f,10000)
 #' ggplot(a,aes(x)) + geom_density() + stat_function(fun = f, color = "red")
 
 oneDsample <- function(f, N, lb = -Inf, ub = Inf, discrete = FALSE) {
-  bdtest <- seq(-50,50,0.001)
+  bdtest <- seq(-50,50,0.0001)
   if (f(-50) == 0 & f(50) == 0 & mean(f(bdtest)) > 0){
     lb = min(bdtest[which(f(bdtest)>0)])
     ub = max(bdtest[which(f(bdtest)>0)])
@@ -60,7 +60,7 @@ oneDsample <- function(f, N, lb = -Inf, ub = Inf, discrete = FALSE) {
     return(data.frame(x=ones))
   }
   else {
-    x <- runif(200000,-10000,10000)
+    x <- seq(-5000,5000, 0.001)
     maxf <- max(f(x))
     mu=x[which(f(x)==maxf)]
     sd = 2/maxf
