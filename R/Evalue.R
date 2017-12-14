@@ -21,4 +21,7 @@ Evalue <-function(g,rv){
     meanx = mean(g(rv))
     return(meanx)
   }
+  else {
+    stop("Error: invalid variables format")
+  }
 }
