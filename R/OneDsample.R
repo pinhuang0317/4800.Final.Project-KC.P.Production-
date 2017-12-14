@@ -17,7 +17,7 @@
 #' ifelse(0 < x & x < 1, 2*x, 0)}
 #' oneDsample(f = betaPDF, N=10000, lb = 0, ub = 1)
 #' hist(oneDsample(f = betaPDF, N=1000000, lb = 0, ub = 1, maxf = 2))
-#'
+
 
 oneDsample <- function(f, N, lb, ub) {
   ones <- runif(N, lb, ub)
