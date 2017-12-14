@@ -19,7 +19,7 @@ ImportS: ggplot2
 #'
 #'
 #' f <- function(x) {ifelse(0 < x & x < 1, 4*x^3, 0)}
-#' a <- oneDsample(f,10000, 0, 1)
+#' a <- oneDsample(f,20000, 0, 1)
 #' ggplot(a,aes(x)) + geom_density() + stat_function(fun = f, color = "red")
 #'
 #' f <- function(x) {1/pi/(1+x^2)}
@@ -41,8 +41,7 @@ oneDsample <- function(f, N, lb = -Inf, ub = Inf, discrete = FALSE) {
     }
   }
   if (lb != -Inf & ub != Inf){
-    maxf <- optimize(f,c(lb,ub),maximum = TRUE)
-    maxf <- maxf$objective
+    maxf <- max(f(runif(100000,lb,ub)))
     ones = c()
     n = 0
     while (n < N) {
@@ -55,9 +54,9 @@ oneDsample <- function(f, N, lb = -Inf, ub = Inf, discrete = FALSE) {
     return(data.frame(x=ones))
   }
   else {
-    max <- optimize(f,c(-5000,5000),maximum = TRUE)
-    maxf <- max$objective
-    mu=max$maximum
+    x <- runif(200000,-10000,10000)
+    maxf <- max(f(x))
+    mu=x[which(f(x)==maxf)]
     sd = 2/maxf
     C = maxf/dnorm(mu,mu,sd)
     ones = c()
