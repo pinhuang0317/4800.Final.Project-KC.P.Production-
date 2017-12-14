@@ -19,7 +19,7 @@ ImportS: ggplot2
 #'
 #'
 #' f <- function(x) {ifelse(0 < x & x < 1, 4*x^3, 0)}
-#' a <- oneDsample(f,20000, 0, 1)
+#' a <- oneDsample(f,10000)
 #' ggplot(a,aes(x)) + geom_density() + stat_function(fun = f, color = "red")
 #'
 #' f <- function(x) {1/pi/(1+x^2)}
@@ -28,8 +28,14 @@ ImportS: ggplot2
 
 oneDsample <- function(f, N, lb = -Inf, ub = Inf, discrete = FALSE) {
   bdtest <- runif(1000000,-50,50)
-  if (f(-50) == 0 & f(50) == 0){
+  if (f(-50) == 0 & f(50) == 0 & mean(f(bdtest)) > 0){
     lb = min(bdtest[which(f(bdtest)>0)])
+    ub = max(bdtest[which(f(bdtest)>0)])
+  }
+  if (f(-50) == 0 & f(50) > 0 & mean(f(bdtest)) > 0){
+    lb = min(bdtest[which(f(bdtest)>0)])
+  }
+  if (f(-50) > 0 & f(50) == 0 & mean(f(bdtest)) > 0){
     ub = max(bdtest[which(f(bdtest)>0)])
   }
   if (discrete == TRUE){
