@@ -1,4 +1,4 @@
-#' what is the function does: Expected Value
+#' Expected Value Calculation
 #'
 #' This function is designed to find the expected value for g(x) or g(x, y) given a function g.
 #'
