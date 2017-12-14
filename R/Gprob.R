@@ -10,6 +10,20 @@
 #'
 #' @examples
 #'
+#' f <- function(x) {ifelse(0 < x & x < 1, 4*x^3, 0)}
+#' x1 = oneDsample(f,10000)
+#' c1 = function(x){x<0.4}
+#' Gprob(c1,x1)
+#'
+#' f <- function(x){
+#' x1 = x[1]
+#' x2 = x[2]
+#' ifelse(x2>0, 1/pi/(1+x1^2) * 0.05*exp(-0.05*x2), 0)}
+#' x2 = twoDsample(f = f, N=10000)
+#' c2 = function(x,y){
+#'  x<0.5 & y<0.2}
+#' Gprob(c2,x2)
+#'
 #'
 
 Gprob <-function(cd,data){
