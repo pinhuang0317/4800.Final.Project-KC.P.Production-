@@ -16,14 +16,21 @@
 #' betaPDF <- function(x) {
 #' ifelse(0 < x & x < 1, 2*x, 0)}
 #' oneDsample(f = betaPDF, N=10000, lb = 0, ub = 1)
-#' hist(oneDsample(f = betaPDF, N=1000000, lb = 0, ub = 1, maxf = 2))
+#'
+#' hist(oneDsample(f = betaPDF, N=1000000, lb = 0, ub = 1))
+#'
 
 
 oneDsample <- function(f, N, lb, ub) {
-  ones <- runif(N, lb, ub)
-  maxf <- max(f(runif(100000,lb,ub)))
-  unis <- runif(N, 0, maxf)
-  ones[unis < f(ones)]
+  if (abs(integrate(f, -Inf, Inf)$val - 1) > 0.001) {
+    stop("Error: not a pdf. The area under the function you given should be 1")
+  }
+  else{
+    ones <- runif(N, lb, ub)
+    maxf <- max(f(runif(100000,lb,ub)))
+    unis <- runif(N, 0, maxf)
+    ones[unis < f(ones)]
+  }
 }
 
 
