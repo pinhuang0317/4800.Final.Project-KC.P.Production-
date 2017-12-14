@@ -20,16 +20,7 @@ ImportS: ggplot2
 #'
 #' f <- function(x) {ifelse(0 < x & x < 1, 4*x^3, 0)}
 #' a <- oneDsample(f,10000, 0, 1)
-#'
-#' f <- function(x) { if (x > 0 & x < 1){x}
-#' else if (x > 2 & x < 3){x/5}
-#' else{0}
-#' }
-#' a <- oneDsample(f = f, N=10000, lb = 0, ub = 3, discrete = TRUE)
-#'
-#' ggplot(data.frame(a),aes(a)) + geom_density() + stat_function(fun = f, color = "red")
-#'
-#'
+#' ggplot(a, aes(x)) + geom_density() + stat_function(fun = f, color = "red")
 
 oneDsample <- function(f, N, lb, ub, discrete = FALSE) {
   if (discrete == TRUE){
@@ -50,7 +41,7 @@ oneDsample <- function(f, N, lb, ub, discrete = FALSE) {
       n = n + 1
     }
   }
-  return(ones)
+  return(data.frame(x=ones))
 }
 
 
