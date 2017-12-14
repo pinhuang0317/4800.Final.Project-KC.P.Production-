@@ -25,6 +25,12 @@ ImportS: ggplot2
 #' f <- function(x) {1/pi/(1+x^2)}
 #' a <- oneDsample(f,20000)
 #' ggplot(a,aes(x)) + geom_density() + stat_function(fun = f, color = "red")
+#'
+#' f <- function(x) {dunif(x, -100, 100)}
+#' a <- oneDsample(f,50000, -100, 100)
+#' a <- oneDsample(f,500)
+#' ggplot(a,aes(x)) + geom_density() + stat_function(fun = f, color = "red")
+#'
 
 oneDsample <- function(f, N, lb = -Inf, ub = Inf, discrete = FALSE) {
   bdtest <- seq(-50,50,0.0001)
