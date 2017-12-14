@@ -23,9 +23,15 @@ ImportS: ggplot2
 #'
 #' f<- function(x) {1/pi/(1+x^2)}
 #' a <- oneDsample(f,20000)
+#'
 #' ggplot(a,aes(x)) + geom_density() + stat_function(fun = f, color = "red")
 
 oneDsample <- function(f, N, lb = -Inf, ub = Inf, discrete = FALSE) {
+  bdtest <- runif(1000000,-50,50)
+  if (f(-50) == 0 & f(50) == 0){
+    lb = min(bdtest[which(f(bdtest)>0)])
+    ub = max(bdtest[which(f(bdtest)>0)])
+  }
   if (discrete == TRUE){
     warning("We cannot test whether a discrete function is a pdf")
   }
