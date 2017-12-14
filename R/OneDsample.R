@@ -20,9 +20,13 @@ ImportS: ggplot2
 #'
 #' f <- function(x) {ifelse(0 < x & x < 1, 4*x^3, 0)}
 #' a <- oneDsample(f,10000, 0, 1)
-#' ggplot(a, aes(x)) + geom_density() + stat_function(fun = f, color = "red")
+#'
+#' f<- function(x) {1/pi/(1+x^2)}
+#' a <- oneDsample(f,100000)
+#'
+#' ggplot(a,aes(x)) + geom_density() + stat_function(fun = f, color = "red")
 
-oneDsample <- function(f, N, lb, ub, discrete = FALSE) {
+oneDsample <- function(f, N, lb = -Inf, ub = Inf, discrete = FALSE) {
   if (discrete == TRUE){
     warning("We cannot test whether a discrete function is a pdf")
   }
@@ -31,17 +35,38 @@ oneDsample <- function(f, N, lb, ub, discrete = FALSE) {
       stop("Error: not a pdf. The area under the function you given should be 1")
     }
   }
-  maxf <- max(f(runif(100000,lb,ub)))
-  ones = c()
-  n = 0
-  while (n < N) {
-    one <-runif(1,lb,ub)
-    if (runif(1, 0, maxf) < f(one)){
-      ones = c(ones, one)
-      n = n + 1
+  if (lb != -Inf & ub != Inf){
+    maxf <- max(f(runif(100000,lb,ub)))
+    ones = c()
+    n = 0
+    while (n < N) {
+      one <-runif(1,lb,ub)
+      if (runif(1, 0, maxf) < f(one)){
+        ones = c(ones, one)
+        n = n + 1
+      }
     }
+    return(data.frame(x=ones))
   }
-  return(data.frame(x=ones))
+  else {
+    x <- runif(200000,-10000,10000)
+    maxf <- max(f(x))
+    mu=x[which(f(x)==maxf)]
+    sd = 1/sqrt(2*pi)/maxf
+    C = maxf/dnorm(mu,mu,sd)
+    ones = c()
+    n = 0
+    while (n < N) {
+      one = rnorm(1, mu, sd)
+      if (runif(1, 0, C * dnorm(one,mu,sd)) < f(one)){
+        ones = c(ones, one)
+        n = n + 1
+      }
+    }
+    return(data.frame(x=ones))
+  }
 }
+
+
 
 
