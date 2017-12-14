@@ -8,7 +8,7 @@ ImportS: cubature
 ImportS: MASS
 
 #'
-#' @param fj the joint pdf that we are sampling from
+#' @param f the joint pdf that we are sampling from
 #' @param N the number of attempted samples.
 #' @param lbx lower bound of support x of f
 #' @param ubx upper bound of support x of f
@@ -45,8 +45,21 @@ twoDsample <- function(f, N, lbx=-5000, ubx=5000, lby=-5000, uby=5000) {
       sig2 = sig[2]
       exp(-1/2*((x1-mu1)^2/sig1^2 - 2*(x1-mu1)*(x2-mu2)/sig1/sig2 + (x2-mu2)^2/sig2^2))/(2*pi*sig1*sig2)
     }
-
-    return( )
+    op = optim(c((ubx+lbx)/2,(uby+lby)/2), f, control = list(fnscale = -1))
+    maxf = op$value
+    mu = c(op$par)
+    sd = 2/maxf
+    C = maxf/dmvnorm(c(mu[1],mu[2]),c(mu[1],mu[2]),c(sd,sd))
+    twos = c()
+    n = 0
+    while (n < N) {
+      two = mvrnorm(1, mu, matrix(c(sd,0,0,sd),2,2))
+      if (runif(1, 0, C * dmvnorm(two,mu,c(sd,sd))) < f(two)){
+        twos = c(twos, two)
+        n = n + 1
+      }
+    }
+    return(data.frame(x=twos[c(seq(1,length(twos)-1,2))],y=twos[c(seq(2,length(twos),2))]))
   }
 }
 
