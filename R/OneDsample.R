@@ -23,7 +23,7 @@ ImportS: ggplot2
 #' ggplot(a,aes(x)) + geom_density() + stat_function(fun = f, color = "red")
 #'
 #' f <- function(x) {1/pi/(1+x^2)}
-#' a <- oneDsample(f,10000)
+#' a <- oneDsample(f,20000)
 #' ggplot(a,aes(x)) + geom_density() + stat_function(fun = f, color = "red")
 
 oneDsample <- function(f, N, lb = -Inf, ub = Inf, discrete = FALSE) {
@@ -64,7 +64,7 @@ oneDsample <- function(f, N, lb = -Inf, ub = Inf, discrete = FALSE) {
     maxf <- max(f(x))
     mu=x[which(f(x)==maxf)]
     sd = 2/maxf
-    C = maxf/dnorm(mu,mu,sd)
+    C = 2*maxf/dnorm(mu,mu,sd)
     ones = c()
     n = 0
     while (n < N) {
