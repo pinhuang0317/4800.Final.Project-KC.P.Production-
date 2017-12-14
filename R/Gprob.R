@@ -36,4 +36,7 @@ Gprob <-function(cd,data){
     meanx = mean(cd(data))
     return(meanx)
   }
+  else {
+    stop("Error: invalid data format")
+  }
 }
