@@ -31,52 +31,107 @@ ImportS: MASS
 #' ifelse(x2>0, 1/pi/(1+x1^2) * 0.05*exp(-0.05*x2), 0)}
 #'
 #' a <- twoDsample(f = f, N=10000)
-#' ggplot(a, aes(x, y)) +  geom_density_2d()
+#' ggplot(a, aes(x,y)) +  geom_density_2d()
 
 twoDsample <- function(f, N, lbx=-5000, ubx=5000, lby=-5000, uby=5000) {
   library(MASS)
   library(cubature)
-  if (abs(adaptIntegrate(f, c(lbx, lby), c(ubx, uby), maxEval=10000)$integral - 1) > 0.001) {
-    stop("Error: Bound is missing/wrong or the function is not a pdf. The area under the function you given should be 1")
-  }
-  if (lbx != -5000 & ubx != 5000 & lby != -5000 & uby != 5000){
-    maxf <- max(replicate(100000,f(c(runif(1,lbx,ubx),runif(1,lby,uby)))))
-    twos = c()
-    n = 0
-    while (n < N) {
-      two <- c(runif(1,lbx,ubx),runif(1,lby,uby))
-      if (runif(1, 0, maxf) < f(two)){
-        twos = c(twos, two)
-        n = n+1
+  if (f(c(-10,-10)) == 0 & f(c(10,10)) == 0){
+    warning("only avilable to find the bound automatically for bounded independent function in (-10,10)")
+    bound <- seq(-10,10,0.005)
+    x = -10
+    flag = 0
+    for (i in bound){
+      x = x + 0.005
+      y = -10
+      for (j in bound){
+        y = y + 0.005
+        if (f(c(x,y)) > 0){
+          flag = 1
+          break
+        }
+      }
+      if (flag == 1){
+        break
       }
     }
-    data.frame(x=twos[c(seq(1,length(twos)-1,2))],y=twos[c(seq(2,length(twos),2))])
-  }
-  else{
-    dmvnorm = function(x,mu,sig){
-      x1 = x[1]
-      x2 = x[2]
-      mu1 = mu[1]
-      mu2 = mu[2]
-      sig1 = sig[1]
-      sig2 = sig[2]
-      exp(-1/2*((x1-mu1)^2/sig1^2 - 2*(x1-mu1)*(x2-mu2)/sig1/sig2 + (x2-mu2)^2/sig2^2))/(2*pi*sig1*sig2)
-    }
-    op = optim(c((ubx+lbx)/2,(uby+lby)/2), f, control = list(fnscale = -1))
-    maxf = op$value
-    mu = c(op$par)
-    sd = 2/maxf
-    C = maxf/dmvnorm(c(mu[1],mu[2]),c(mu[1],mu[2]),c(sd,sd))
-    twos = c()
-    n = 0
-    while (n < N) {
-      two = mvrnorm(1, mu, matrix(c(sd,0,0,sd),2,2))
-      if (runif(1, 0, C * dmvnorm(two,mu,c(sd,sd))) < f(two)){
-        twos = c(twos, two)
-        n = n + 1
+    lbx = x
+    lby = y
+    x = 10
+    flag = 0
+    for (i in bound){
+      x = x - 0.005
+      y = 10
+      for (j in bound){
+        y = y - 0.005
+        if (f(c(x,y)) > 0){
+          flag = 1
+          break
+        }
       }
+      if (flag == 1){
+        break
+      }
+      x = 10
+      flag = 0
+      for (i in bound){
+        x = x - 0.005
+        y = 10
+        for (j in bound){
+          y = y - 0.005
+          if (f(c(x,y)) > 0){
+            flag = 1
+            break
+          }
+        }
+        if (flag == 1){
+          break
+        }
+      }
+      ubx = x
+      ubx = y
     }
-    return(data.frame(x=twos[c(seq(1,length(twos)-1,2))],y=twos[c(seq(2,length(twos),2))]))
-  }
-}
+    if (abs(adaptIntegrate(f, c(lbx, lby), c(ubx, uby), maxEval=10000)$integral - 1) > 0.001) {
+      stop("Error: Bound is missing/wrong or the function is not a pdf. The area under the function you given should be 1")
+    }
+    if (lbx != -5000 & ubx != 5000 & lby != -5000 & uby != 5000){
+      maxf <- max(replicate(100000,f(c(runif(1,lbx,ubx),runif(1,lby,uby)))))
+      twos = c()
+      n = 0
+      while (n < N) {
+        two <- c(runif(1,lbx,ubx),runif(1,lby,uby))
+        if (runif(1, 0, maxf) < f(two)){
+          twos = c(twos, two)
+          n = n+1
+        }
+      }
+      data.frame(x=twos[c(seq(1,length(twos)-1,2))],y=twos[c(seq(2,length(twos),2))])
+    }
+    else{
+      dmvnorm = function(x,mu,sig){
+        x1 = x[1]
+        x2 = x[2]
+        mu1 = mu[1]
+        mu2 = mu[2]
+        sig1 = sig[1]
+        sig2 = sig[2]
+        exp(-1/2*((x1-mu1)^2/sig1^2 - 2*(x1-mu1)*(x2-mu2)/sig1/sig2 + (x2-mu2)^2/sig2^2))/(2*pi*sig1*sig2)
+      }
+      op = optim(c((ubx+lbx)/2,(uby+lby)/2), f, control = list(fnscale = -1))
+      maxf = op$value
+      mu = c(op$par)
+      sd = 2/maxf
+      C = maxf/dmvnorm(c(mu[1],mu[2]),c(mu[1],mu[2]),c(sd,sd))
+      twos = c()
+      n = 0
+      while (n < N) {
+        two = mvrnorm(1, mu, matrix(c(sd,0,0,sd),2,2))
+        if (runif(1, 0, C * dmvnorm(two,mu,c(sd,sd))) < f(two)){
+          twos = c(twos, two)
+          n = n + 1
+        }
+      }
+      return(data.frame(x=twos[c(seq(1,length(twos)-1,2))],y=twos[c(seq(2,length(twos),2))]))
+    }
+  }}
 
