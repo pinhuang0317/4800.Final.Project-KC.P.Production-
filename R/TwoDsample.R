@@ -1,4 +1,4 @@
-#' what is the function does: Conditional variable Rejection Sampling
+#' Conditional variable Rejection Sampling
 #'
 #' This function implements conditional variabel rejection sampling for rvs with bounded support x,y and which have have bounded pdf.
 #'
