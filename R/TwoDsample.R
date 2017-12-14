@@ -42,10 +42,12 @@ twoDsample <- function(f, N, lbx=-5000, ubx=5000, lby=-5000, uby=5000) {
   if (lbx != -5000 & ubx != 5000 & lby != -5000 & uby != 5000){
     maxf <- max(replicate(100000,f(c(runif(1,lbx,ubx),runif(1,lby,uby)))))
     twos = c()
-    for (i in 1:N) {
+    n = 0
+    while (n < N) {
       two <- c(runif(1,lbx,ubx),runif(1,lby,uby))
       if (runif(1, 0, maxf) < f(two)){
         twos = c(twos, two)
+        n = n+1
       }
     }
     data.frame(x=twos[c(seq(1,length(twos)-1,2))],y=twos[c(seq(2,length(twos),2))])
