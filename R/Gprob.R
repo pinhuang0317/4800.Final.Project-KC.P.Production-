@@ -1,4 +1,4 @@
-#' what is the function does: Calculate Probability
+#' Conditional Probability Calculation
 #'
 #' This function is designed to calculate the probabilities realted to X or X and Y.
 #'
@@ -40,3 +40,5 @@ Gprob <-function(cd,data){
     stop("Error: invalid data format")
   }
 }
+
+roxygen2::roxygenize()
