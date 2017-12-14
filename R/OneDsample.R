@@ -1,4 +1,4 @@
-#' what is the function does: Single Variable Rejection Sampling
+#' Single variable Rejection Sampling
 #'
 #' This function implements single variabel rejection sampling for rvs with bounded support and which have have bounded pdf.
 #'
