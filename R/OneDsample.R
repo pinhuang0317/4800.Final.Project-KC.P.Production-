@@ -3,9 +3,6 @@
 #' This function implements single variabel rejection sampling for rvs with bounded support and which have have bounded pdf.
 #'
 #'
-
-ImportS: ggplot2
-
 #'
 #' @param f the pdf that we are sampling from
 #' @param N the number of attempted samples.

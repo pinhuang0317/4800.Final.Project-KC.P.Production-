@@ -2,11 +2,6 @@
 #'
 #' This function implements conditional variabel rejection sampling for rvs with bounded support x,y and which have have bounded pdf.
 #'
-
-ImportS: ggplot2
-ImportS: cubature
-ImportS: MASS
-
 #'
 #' @param f the joint pdf that we are sampling from
 #' @param N the number of attempted samples.
