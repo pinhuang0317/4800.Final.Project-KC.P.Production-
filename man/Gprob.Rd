@@ -33,5 +33,8 @@ c2 = function(x,y){
  x<0.5 & y<0.2}
 Gprob(c2,x2)
 
+<<<<<<< HEAD
+=======
 
+>>>>>>> cdbb79a12f539e6c21a1ac083fd355a5f60e8def
 }

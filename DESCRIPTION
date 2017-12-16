@@ -1,0 +1,14 @@
+Package: RejSample
+Type: Package
+Title: Rejection Sampling Package
+Version: 1.0
+Date: 2017-12-13
+Author: Kuncheng Fan and Pin Huang
+Maintainer: Kuncheng Fan and Pin Huang <kunchengjerryfan@gmail.com>
+Description: Try it and you will know what it does
+License: Authorized by Pin and Kuncheng
+RoxygenNote: 6.0.1
+Imports: ggplot2, cubature, MASS
+Suggests: knitr,
+    rmarkdown
+VignetteBuilder: knitr
