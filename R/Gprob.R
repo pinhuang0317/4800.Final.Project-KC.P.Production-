@@ -40,7 +40,3 @@ Gprob <-function(cd,data){
   }
 }
 
-<<<<<<< HEAD
-=======
-
->>>>>>> cdbb79a12f539e6c21a1ac083fd355a5f60e8def
