@@ -24,7 +24,6 @@
 #'  x<0.5 & y<0.2}
 #' Gprob(c2,x2)
 #'
-#'
 
 Gprob <-function(cd,data){
   len = length(data)
@@ -41,4 +40,3 @@ Gprob <-function(cd,data){
   }
 }
 
-roxygen2::roxygenize()
