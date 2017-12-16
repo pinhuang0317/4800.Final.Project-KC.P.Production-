@@ -1,58 +1,264 @@
 ---
-title: "Vignette Title"
-author: "Vignette Author"
+title: "Rejction Sampling"
+author: "Kuncheng Fan & Pin Huang"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{Rejction Sampling}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
-Vignettes are long form documentation commonly included in packages. Because they are part of the distribution of the package, they need to be as compact as possible. The `html_vignette` output type provides a custom style sheet (and tweaks some options) to ensure that the resulting html is as small as possible. The `html_vignette` format:
-
-- Never uses retina figures
-- Has a smaller default figure size
-- Uses a custom CSS stylesheet instead of the default Twitter Bootstrap style
-
-## Vignette Info
-
-Note the various macros within the `vignette` section of the metadata block above. These are required in order to instruct R how to build the vignette. Note that you should change the `title` field and the `\VignetteIndexEntry` to match the title of your vignette.
-
-## Styles
-
-The `html_vignette` template includes a basic CSS theme. To override this theme you can specify your own CSS in the document metadata as follows:
-
-    output: 
-      rmarkdown::html_vignette:
-        css: mystyles.css
-
-## Figures
-
-The figure sizes have been customised so that you can easily put two images side-by-side. 
-
-```{r, fig.show='hold'}
-plot(1:10)
-plot(10:1)
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
 ```
 
-You can enable figure captions by `fig_caption: yes` in YAML:
+## Abstract
 
-    output:
-      rmarkdown::html_vignette:
-        fig_caption: yes
+Rejection sampling is a basic technique used to generate observations from a distribution. It is also commonly called the acceptance-rejection method or “accept-reject algorithm.”
+	Simply speaking, if the user has a function he or she is trying to sample from, whose functional form is well known, basically accept the sample by generating a uniform random number at any x and accept it if the value if below the value of the function at that x.
 
-Then you can use the chunk option `fig.cap = "Your figure caption."` in **knitr**.
+The process: 
+1. Draw x uniformly from [xmin, xmax] 
 
-## More Examples
+2. Draw y uniformly from [0, ymax]
 
-You can write math expressions, e.g. $Y = X\beta + \epsilon$, footnotes^[A footnote here.], and tables, e.g. using `knitr::kable()`.
+3. if y < f(x), accept the sample
 
-```{r, echo=FALSE, results='asis'}
-knitr::kable(head(mtcars, 10))
+4. otherwise reject it
+
+5. repeat
+
+```{r, include=FALSE}
+library(ggplot2)
 ```
 
-Also a quote using `>`:
 
-> "He who gives up [code] safety for [code] speed deserves neither."
-([via](https://twitter.com/hadleywickham/status/504368538874703872))
+## Single variable Rejection Sampling
+
+This function uses rejection sampling to sample from given one variable pdf. The function has to be a correct pdf, otherwise the function will output error. Notice if the input pdf is discrete, this function cannot detect whether the input is a true pdf. The default of `discrete` is FALSE. This function will automatically find the bound of pdf's domain if it is between [-50, 50], otherwise user should input the bound. The default bound `lb` and `ub` is Inf. Input bounds for bounded pdf results faster running.
+
+```{r, include = FALSE}
+oneDsample <- function(f, N, lb = -Inf, ub = Inf, discrete = FALSE) {
+  bdtest <- seq(-50,50,0.0001)
+  if (f(-50) == 0 & f(50) == 0 & mean(f(bdtest)) > 0){
+    lb = min(bdtest[which(f(bdtest)>0)])
+    ub = max(bdtest[which(f(bdtest)>0)])
+  }
+  if (f(-50) == 0 & f(50) > 0 & mean(f(bdtest)) > 0){
+    lb = min(bdtest[which(f(bdtest)>0)])
+  }
+  if (f(-50) > 0 & f(50) == 0 & mean(f(bdtest)) > 0){
+    ub = max(bdtest[which(f(bdtest)>0)])
+  }
+  if (discrete == TRUE){
+    warning("We cannot test whether a discrete function is a pdf")
+  }
+  if (discrete == FALSE){
+    if (abs(integrate(f, -Inf, Inf)$val - 1) > 0.001) {
+      stop("Error: not a pdf. The area under the function you given should be 1")
+    }
+  }
+  if (lb != -Inf & ub != Inf){
+    maxf <- max(f(runif(100000,lb,ub)))
+    ones = c()
+    n = 0
+    while (n < N) {
+      one <-runif(1,lb,ub)
+      if (runif(1, 0, maxf) < f(one)){
+        ones = c(ones, one)
+        n = n + 1
+      }
+    }
+    return(data.frame(x=ones))
+  }
+  else {
+    x <- seq(-5000,5000, 0.001)
+    maxf <- max(f(x))
+    mu=x[which(f(x)==maxf)]
+    sd = 2/maxf
+    C = 2*maxf/dnorm(mu,mu,sd)
+    ones = c()
+    n = 0
+    while (n < N) {
+      one = rnorm(1, mu, sd)
+      if (runif(1, 0, C * dnorm(one,mu,sd)) < f(one)){
+        ones = c(ones, one)
+        n = n + 1
+      }
+    }
+    return(data.frame(x=ones))
+  }
+}
+```
+
+**Sample of bounded pdf**
+```{r}
+f <- function(x) {ifelse(0 < x & x < 1, 4*x^3, 0)}
+a <- oneDsample(f,10000)
+ggplot(a,aes(x)) + geom_density() + stat_function(fun = f, color = "red")
+```
+
+**Sample of unbounded pdf**
+
+```{r}
+f <- function(x) {1/pi/(1+x^2)}
+a <- oneDsample(f,20000)
+ggplot(a,aes(x)) + geom_density() + stat_function(fun = f, color = "red")
+```
+
+## Conditional Variable Rejection Sampling
+
+```{r, include = FALSE}
+twoDsample <- function(f, N, lbx=-5000, ubx=5000, lby=-5000, uby=5000) {
+  library(MASS)
+  library(cubature)
+  if (abs(adaptIntegrate(f, c(lbx, lby), c(ubx, uby), maxEval=10000)$integral - 1) > 0.001) {
+    stop("Error: Bound is missing/wrong or the function is not a pdf. The area under the function you given should be 1")
+  }
+  if (lbx != -5000 & ubx != 5000 & lby != -5000 & uby != 5000){
+    maxf <- max(replicate(100000,f(c(runif(1,lbx,ubx),runif(1,lby,uby)))))
+    twos = c()
+    n = 0
+    while (n < N) {
+      two <- c(runif(1,lbx,ubx),runif(1,lby,uby))
+      if (runif(1, 0, maxf) < f(two)){
+        twos = c(twos, two)
+        n = n+1
+      }
+    }
+    data.frame(x=twos[c(seq(1,length(twos)-1,2))],y=twos[c(seq(2,length(twos),2))])
+  }
+  else{
+    dmvnorm = function(x,mu,sig){
+      x1 = x[1]
+      x2 = x[2]
+      mu1 = mu[1]
+      mu2 = mu[2]
+      sig1 = sig[1]
+      sig2 = sig[2]
+      exp(-1/2*((x1-mu1)^2/sig1^2 - 2*(x1-mu1)*(x2-mu2)/sig1/sig2 + (x2-mu2)^2/sig2^2))/(2*pi*sig1*sig2)
+    }
+    op = optim(c((ubx+lbx)/2,(uby+lby)/2), f, control = list(fnscale = -1))
+    maxf = op$value
+    mu = c(op$par)
+    sd = 2/maxf
+    C = maxf/dmvnorm(c(mu[1],mu[2]),c(mu[1],mu[2]),c(sd,sd))
+    twos = c()
+    n = 0
+    while (n < N) {
+      two = mvrnorm(1, mu, matrix(c(sd,0,0,sd),2,2))
+      if (runif(1, 0, C * dmvnorm(two,mu,c(sd,sd))) < f(two)){
+        twos = c(twos, two)
+        n = n + 1
+      }
+    }
+    return(data.frame(x=twos[c(seq(1,length(twos)-1,2))],y=twos[c(seq(2,length(twos),2))]))
+  }
+}
+```
+
+```{r}
+jointPFF <- function(x){
+  x1 = x[1]
+  x2 = x[2]
+  ifelse(0<x1 & x1<1 & 0<x2 & x2<1 & 0<x1+x2 & x1+x2<1, 24*x1*x2, 0)}
+
+a <- twoDsample(f = jointPFF, N=10000, lbx = 0, ubx = 1, lby = 0, uby = 1)
+ggplot(a, aes(x, y)) +  geom_density_2d()
+```
+
+```{r}
+f <- function(x){
+x1 = x[1]
+x2 = x[2]
+ifelse(x2>0, 1/pi/(1+x1^2) * 0.05*exp(-0.05*x2), 0)}
+ 
+a <- twoDsample(f = f, N=10000)
+ggplot(a, aes(x, y)) +  geom_density_2d()
+```
+
+## Evalue
+
+Based on the sampling results from OneDsample or TwoDsample functions, we can use Evalue function to compute the expected value of g(X) or g(X, Y).
+
+```{r, include=FALSE}
+Evalue <-function(g,rv){
+  len = length(rv)
+  if (len == 2){
+    meanxy = mean(g(rv$x,rv$y))
+    return(meanxy)
+  }
+  else if (len == 1){
+    meanx = mean(g(rv))
+    return(meanx)
+  }
+  else {
+    stop("Error: invalid variables format")
+  }
+}
+```
+
+```{r}
+betaPDF <- function(x) {
+ ifelse(0 < x & x < 1, 2*x, 0)}
+ x1 = data.frame(oneDsample(f = betaPDF, N=10000, lb = 0, ub = 1))
+ g1 = function(x){x^2}
+ Evalue(g1,x1)
+``` 
+
+```{r}
+ jointPDF <- function(x){
+ x1 = x[1]
+ x2 = x[2]
+ ifelse(0<x1 & x1 <1 & 0<x2 & x2<1 & 0<x1+x2 & x1+x2<1, 24*x1*x2, 0)}
+ xy = data.frame(twoDsample(f = jointPDF, N=10000, lbx=0, ubx=1, lby=0, uby=1))
+ g2 = function(x,y){x^2+y}
+ Evalue(g2,xy)
+```
+
+## Gprob
+
+```{r, include=FALSE}
+Gprob <-function(cd,data){
+  len = length(data)
+  if (len == 2){
+    meanxy = mean(cd(data$x,data$y))
+    return(meanxy)
+  }
+  else if (len == 1){
+    meanx = mean(cd(data))
+    return(meanx)
+  }
+  else {
+    stop("Error: invalid data format")
+  }
+}
+```
+
+```{r}
+f <- function(x) {
+  ifelse(0 < x & x < 1, 4*x^3, 0)}
+
+x1 = oneDsample(f, 10000)
+c1 = function(x){x<0.4}
+Gprob(c1,x1)
+```
+
+```{r}
+ f <- function(x){
+ x1 = x[1]
+ x2 = x[2]
+ ifelse(x2>0, 1/pi/(1+x1^2) * 0.05*exp(-0.05*x2), 0)}
+ x2 = twoDsample(f = f, N=10000)
+ c2 = function(x,y){
+  x<0.5 & y<0.2}
+ Gprob(c2,x2)
+```
+
+
+
+
