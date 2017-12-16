@@ -19,12 +19,13 @@ knitr::opts_chunk$set(
 ## Abstract
 
 Rejection sampling is a basic technique used to generate observations from a distribution. It is also commonly called the acceptance-rejection method or “accept-reject algorithm.”
-	Simply speaking, if the user has a function he or she is trying to sample from, whose functional form is well known, basically accept the sample by generating a uniform random number at any x and accept it if the value if below the value of the function at that x.
+Simply speaking, if the user has a function he or she is trying to sample from, whose functional form is well known, basically accept the sample by generating a uniform random number at any x and accept it if the value if below the value of the function at that x.
 
 The process: 
-1. Draw x uniformly from [xmin, xmax] 
 
-2. Draw y uniformly from [0, ymax]
+1. Draw x uniformly from [Xmin, Xmax] 
+
+2. Draw y uniformly from [0, Ymax]
 
 3. if y < f(x), accept the sample
 
@@ -39,7 +40,7 @@ library(ggplot2)
 
 ## Single variable Rejection Sampling
 
-This function uses rejection sampling to sample from given one variable pdf. The function has to be a correct pdf, otherwise the function will output error. Notice if the input pdf is discrete, this function cannot detect whether the input is a true pdf. The default of `discrete` is FALSE. This function will automatically find the bound of pdf's domain if it is between [-50, 50], otherwise user should input the bound. The default bound `lb` and `ub` is Inf. Input bounds for bounded pdf results faster running.
+This function uses rejection sampling to sample from given one variable pdf. The function has to be an appropriate pdf, otherwise the function will output error. Notice if the input pdf is discrete, this function cannot detect whether the input is a true pdf. The default of `discrete` is FALSE. This function will automatically find the bound of pdf's domain if it is between [-50, 50], otherwise user should input the bound. The defaults of bound `lb` and `ub` are -Inf and Inf. Input bounds for bounded pdf results faster running.
 
 ```{r, include = FALSE}
 oneDsample <- function(f, N, lb = -Inf, ub = Inf, discrete = FALSE) {
@@ -95,14 +96,14 @@ oneDsample <- function(f, N, lb = -Inf, ub = Inf, discrete = FALSE) {
 }
 ```
 
-**Sample of bounded pdf**
+**Sample from bounded pdf**
 ```{r}
 f <- function(x) {ifelse(0 < x & x < 1, 4*x^3, 0)}
 a <- oneDsample(f,10000)
 ggplot(a,aes(x)) + geom_density() + stat_function(fun = f, color = "red")
 ```
 
-**Sample of unbounded pdf**
+**Sample from unbounded pdf**
 
 ```{r}
 f <- function(x) {1/pi/(1+x^2)}
@@ -111,6 +112,8 @@ ggplot(a,aes(x)) + geom_density() + stat_function(fun = f, color = "red")
 ```
 
 ## Conditional Variable Rejection Sampling
+
+In terms of the principle of OneDsample function, TwoDsample function is also based on rejection sampling and designed to sample from (X, Y) given the joint density function. Initially, the user need to input an appropriate joint density function, otherwise the function will output error. Compared with OneDsample, there is no judging criteria for discrete and this function cannot automatically find the bound for this given function. So, the user need to input the lower and upper bounds for both X and Y (if exists). According to the limitation of normal distribution, the defaults of bound are set as -5000 and 5000. 
 
 ```{r, include = FALSE}
 twoDsample <- function(f, N, lbx=-5000, ubx=5000, lby=-5000, uby=5000) {
@@ -161,6 +164,8 @@ twoDsample <- function(f, N, lbx=-5000, ubx=5000, lby=-5000, uby=5000) {
 }
 ```
 
+**Sample from bounded pdf**
+
 ```{r}
 jointPFF <- function(x){
   x1 = x[1]
@@ -170,6 +175,8 @@ jointPFF <- function(x){
 a <- twoDsample(f = jointPFF, N=10000, lbx = 0, ubx = 1, lby = 0, uby = 1)
 ggplot(a, aes(x, y)) +  geom_density_2d()
 ```
+
+**Sample from unbounded pdf**
 
 ```{r}
 f <- function(x){
@@ -202,6 +209,8 @@ Evalue <-function(g,rv){
 }
 ```
 
+**Example of single variable pdf**
+
 ```{r}
 betaPDF <- function(x) {
  ifelse(0 < x & x < 1, 2*x, 0)}
@@ -209,6 +218,8 @@ betaPDF <- function(x) {
  g1 = function(x){x^2}
  Evalue(g1,x1)
 ``` 
+
+**Example of joint pdf**
 
 ```{r}
  jointPDF <- function(x){
@@ -221,6 +232,8 @@ betaPDF <- function(x) {
 ```
 
 ## Gprob
+
+Based on the sampling results from OneDsample or TwoDsample functions, we can use Gprob function to compute the probabilities related to X or X and Y.
 
 ```{r, include=FALSE}
 Gprob <-function(cd,data){
@@ -239,6 +252,8 @@ Gprob <-function(cd,data){
 }
 ```
 
+**Example of single variable pdf**
+
 ```{r}
 f <- function(x) {
   ifelse(0 < x & x < 1, 4*x^3, 0)}
@@ -247,6 +262,8 @@ x1 = oneDsample(f, 10000)
 c1 = function(x){x<0.4}
 Gprob(c1,x1)
 ```
+
+**Example of joint pdf**
 
 ```{r}
  f <- function(x){
