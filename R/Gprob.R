@@ -41,4 +41,4 @@ Gprob <-function(cd,data){
   }
 }
 
-roxygen2::roxygenize()
+
